@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YouTube to ASL Converter</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f9;
+            color: #333;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 800px;
+            margin: 20px auto;
+            text-align: center;
+        }
+
+        #videoForm {
+            margin-bottom: 20px;
+        }
+
+        #videoUrl {
+            padding: 10px;
+            width: 70%;
+            margin-right: 10px;
+        }
+
+        button {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        #videoPlayer {
+            margin-bottom: 20px;
+        }
+
+        #aslContainer {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        #aslContainer img {
+            width: 100px;
+            height: 100px;
+            margin: 5px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        #captionContainer {
+            margin-top: 10px;
+            font-size: 16px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>YouTube to ASL Converter</h1>
+        <form id="videoForm">
+            <input type="text" id="videoUrl" placeholder="Enter YouTube Video URL" required>
+            <button type="submit">Convert</button>
+        </form>
+        <div id="videoPlayer">
+            <iframe id="ytPlayer" width="560" height="315" frameborder="0" allowfullscreen></iframe>
+        </div>
+        <div id="output">
+            <div id="captionContainer"></div>
+            <div id="aslContainer"></div>
+        </div>
+    </div>
+    <script>
+        document.getElementById("videoForm").addEventListener("submit", async (e) => {
+            e.preventDefault();
+
+            const videoUrl = document.getElementById("videoUrl").value;
+            const videoId = extractVideoId(videoUrl);
+            if (!videoId) {
+                alert("Invalid YouTube URL");
+                return;
+            }
+
+            // Load YouTube video
+            loadYouTubeVideo(videoId);
+
+            // Simulate fetching captions (you'd replace this with an actual API call)
+            const captions = await fetchCaptions(videoId);
+
+            // Process captions and map them to ASL images
+            const aslData = processCaptionsToASL(captions);
+
+            // Render captions and ASL images
+            renderASL(aslData);
+        });
+
+        function extractVideoId(url) {
+            const match = url.match(/(?:https?:\/\/)?(?:www\.)?youtube\.com\/watch\?v=([\w-]+)/);
+            return match ? match[1] : null;
+        }
+
+        function loadYouTubeVideo(videoId) {
+            const player = document.getElementById("ytPlayer");
+            player.src = `https://www.youtube.com/embed/${videoId}`;
+        }
+
+        async function fetchCaptions(videoId) {
+            // Simulated captions for demo purposes
+            return [
+                { text: "hello", start: 0, end: 2 },
+                { text: "welcome", start: 3, end: 5 },
+                { text: "to this demo", start: 6, end: 8 }
+            ];
+        }
+
+        function processCaptionsToASL(captions) {
+            const aslDirectory = "filtered_data";
+            return captions.map(caption => {
+                const firstLetter = caption.text[0].toLowerCase(); // Ensure lowercase
+                return {
+                    text: caption.text,
+                    image: `${aslDirectory}/${firstLetter}.webp`
+                };
+            });
+        }
+
+        function renderASL(aslData) {
+            const aslContainer = document.getElementById("aslContainer");
+            const captionContainer = document.getElementById("captionContainer");
+
+            aslContainer.innerHTML = ""; // Clear previous ASL images
+            captionContainer.innerHTML = ""; // Clear previous captions
+
+            aslData.forEach(item => {
+                // Display caption text
+                const caption = document.createElement("div");
+                caption.textContent = item.text;
+                captionContainer.appendChild(caption);
+
+                // Display ASL image for each caption
+                const img = document.createElement("img");
+                img.src = item.image;
+                img.alt = item.text;
+                img.onerror = () => (img.style.display = "none"); // Hide if the image isn't found
+                aslContainer.appendChild(img);
+            });
+        }
+    </script>
+</body>
+</html>
